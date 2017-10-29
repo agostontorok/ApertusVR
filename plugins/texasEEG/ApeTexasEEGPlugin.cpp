@@ -14,6 +14,7 @@ ApeTexasEEGPlugin::ApeTexasEEGPlugin()
 	mKeyCodeMap = std::map<OIS::KeyCode, bool>();
 	mTranslateSpeedFactor = 3;
 	mRotateSpeedFactor = 1;
+	mIsSwim = false;
 }
 
 ApeTexasEEGPlugin::~ApeTexasEEGPlugin()
@@ -65,7 +66,7 @@ void ApeTexasEEGPlugin::Init()
 	}
 }
 
-void ApeTexasEEGPlugin::moveUserNode()
+void ApeTexasEEGPlugin::moveUserNodeByKeyBoard()
 {
 	auto userNode = mUserNode.lock();
 	if (userNode)
@@ -103,9 +104,16 @@ void ApeTexasEEGPlugin::Run()
 	{
 		if (mpKeyboard)
 			mpKeyboard->capture();
-		else if (mpMouse)
+		if (mpMouse)
 			mpMouse->capture();
-		moveUserNode();
+		moveUserNodeByKeyBoard();
+		if (mIsSwim)
+		{
+			if (auto userNode = mUserNode.lock())
+			{
+				userNode->translate(Ape::Vector3(0, 0, -1 * mTranslateSpeedFactor), Ape::Node::TransformationSpace::LOCAL);
+			}
+		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 	mpEventManager->disconnectEvent(Ape::Event::Group::NODE, std::bind(&ApeTexasEEGPlugin::eventCallBack, this, std::placeholders::_1));
@@ -150,15 +158,12 @@ bool ApeTexasEEGPlugin::mouseMoved(const OIS::MouseEvent & e)
 
 bool ApeTexasEEGPlugin::mousePressed(const OIS::MouseEvent & e, OIS::MouseButtonID id)
 {
-	if (auto userNode = mUserNode.lock())
-	{
-		userNode->translate(Ape::Vector3(0, 1, 0), Ape::Node::TransformationSpace::LOCAL);
-		userNode->rotate(-0.017f, Ape::Vector3(0, 0, 1), Ape::Node::TransformationSpace::WORLD);
-	}
+	mIsSwim = true;
 	return true;
 }
 
 bool ApeTexasEEGPlugin::mouseReleased(const OIS::MouseEvent & e, OIS::MouseButtonID id)
 {
+	mIsSwim = false;
 	return true;
 }

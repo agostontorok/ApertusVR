@@ -64,11 +64,13 @@ private:
 
 	std::map<OIS::KeyCode, bool> mKeyCodeMap;
 
-	void moveUserNode();
+	void moveUserNodeByKeyBoard();
 
 	int mTranslateSpeedFactor;
 
 	int mRotateSpeedFactor;
+
+	bool mIsSwim;
 	
 public:
 	ApeTexasEEGPlugin();
